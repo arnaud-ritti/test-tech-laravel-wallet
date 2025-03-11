@@ -17,6 +17,7 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->integer('frequency')->nullable();
+            $table->string('reason')->nullable();
             $table->enum('type', ['recurring', 'single'])->default('single');
         });
     }
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->dropColumn('end_date');
             $table->dropColumn('frequency');
             $table->dropColumn('type');
+            $table->dropColumn('reason');
         });
     }
 };

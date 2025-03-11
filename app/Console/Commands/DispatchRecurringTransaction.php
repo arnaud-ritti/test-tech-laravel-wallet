@@ -7,7 +7,9 @@ namespace App\Console\Commands;
 use App\Actions\PerformWalletTransaction;
 use App\Enums\WalletTransactionType;
 use App\Enums\WalletTransfertType;
+use App\Exceptions\InsufficientBalance;
 use App\Models\WalletTransfer;
+use App\Notifications\UnprocessableTransation;
 use Illuminate\Console\Command;
 
 class DispatchRecurringTransaction extends Command
@@ -33,31 +35,35 @@ class DispatchRecurringTransaction extends Command
     {
         $today = now();
         $tranferts = WalletTransfer::where('type', WalletTransfertType::RECURRING)
-            ->whereTodayOrAfter('start_date')
-            ->whereBeforeToday('end_date')
+            ->whereTodayOrBefore('start_date')
+            ->whereTodayOrAfter('end_date')
             ->get();
 
         $tranferts->filter(function (WalletTransfer $walletTransfer) use ($today) {
-            return $today->diffInDays($walletTransfer->start_date) % $walletTransfer->frequency == 0;
+            return $today->diffInDays($walletTransfer->start_date, true) % $walletTransfer->frequency == 0;
         })->each(function (WalletTransfer $walletTransfer) use ($performWalletTransaction) {
-            $sender = $walletTransfer->source;
-            $recipient = $walletTransfer->target;
+            try {
+                $sender = $walletTransfer->source;
+                $recipient = $walletTransfer->target;
 
-            $performWalletTransaction->execute(
-                wallet: $sender->wallet,
-                type: WalletTransactionType::DEBIT,
-                amount: $walletTransfer->amount,
-                reason: $walletTransfer->reason,
-                transfer: $walletTransfer
-            );
+                $performWalletTransaction->execute(
+                    wallet: $sender,
+                    type: WalletTransactionType::DEBIT,
+                    amount: $walletTransfer->amount,
+                    reason: $walletTransfer->reason,
+                    transfer: $walletTransfer
+                );
 
-            $performWalletTransaction->execute(
-                wallet: $recipient->wallet,
-                type: WalletTransactionType::CREDIT,
-                amount: $walletTransfer->amount,
-                reason: $walletTransfer->reason,
-                transfer: $walletTransfer
-            );
+                $performWalletTransaction->execute(
+                    wallet: $recipient,
+                    type: WalletTransactionType::CREDIT,
+                    amount: $walletTransfer->amount,
+                    reason: $walletTransfer->reason,
+                    transfer: $walletTransfer
+                );
+            } catch (InsufficientBalance $exception) {
+                $exception->wallet->user->notify(new UnprocessableTransation($walletTransfer));
+            }
         });
     }
 }

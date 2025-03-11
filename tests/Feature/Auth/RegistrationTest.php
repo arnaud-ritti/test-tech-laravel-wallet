@@ -34,7 +34,6 @@ test('new users have a empty wallet', function () {
     ]);
 
     assertAuthenticated();
-
     $user = auth()->user();
     assertEquals($user->wallet->balance, 0);
 });

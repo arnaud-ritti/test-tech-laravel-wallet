@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Exceptions;
 
 use App\Models\Wallet;
+use App\Models\WalletTransfer;
 
 class InsufficientBalance extends ApiException
 {

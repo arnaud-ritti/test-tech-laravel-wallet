@@ -8,6 +8,7 @@ use App\Enums\WalletTransfertType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class WalletTransfer extends Model
 {
@@ -41,18 +42,18 @@ class WalletTransfer extends Model
     }
 
     /**
-     * @return BelongsTo<WalletTransaction>
+     * @return BelongsToMany<WalletTransaction>
      */
-    public function credit(): BelongsTo
+    public function credit(): BelongsToMany
     {
-        return $this->belongsTo(WalletTransaction::class, 'credit_id');
+        return $this->belongsToMany(WalletTransaction::class, 'credit_id')->withPivot(['status']);
     }
 
     /**
-     * @return BelongsTo<Wallet>
+     * @return BelongsToMany<WalletTransaction>
      */
-    public function debit(): BelongsTo
+    public function debit(): BelongsToMany
     {
-        return $this->belongsTo(WalletTransaction::class, 'debit_id');
+        return $this->belongsToMany(WalletTransaction::class, 'debit_id')->withPivot(['status']);
     }
 }

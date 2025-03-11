@@ -11,13 +11,12 @@ use Illuminate\Http\Response;
 
 class GetRecurringTransferts
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request)
     {
         $user = $request->user();
-        $recurringTransferts = WalletTransfer::where([
-            'source_id' => $user->wallet,
-            'type' => WalletTransfertType::RECURRING,
-        ]);
+        $recurringTransferts = $user->wallet->transfers()
+            ->where('type', WalletTransfertType::RECURRING)
+            ->get();
 
         return response()->json($recurringTransferts);
     }

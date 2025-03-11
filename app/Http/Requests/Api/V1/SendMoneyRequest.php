@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Enums\WalletTransfertType;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,13 +26,31 @@ class SendMoneyRequest extends FormRequest
             ],
             'amount' => [
                 'required',
-                'integer',
-                'min:1',
+                'numeric',
+                'min:0.01',
             ],
             'reason' => [
                 'required',
                 'string',
                 'max:255',
+            ],
+            'type' => [
+                Rule::enum(WalletTransfertType::class),
+            ],
+            'start_date' => [
+                'required_if:type,recurring',
+                'date',
+                'after_or_equal:today',
+            ],
+            'end_date' => [
+                'required_if:type,recurring',
+                'date',
+                'after_or_equal:start_date',
+            ],
+            'frequency' => [
+                'required_if:type,recurring',
+                'numeric',
+                'min:1',
             ],
         ];
     }
@@ -39,5 +58,23 @@ class SendMoneyRequest extends FormRequest
     public function getRecipient(): User
     {
         return User::where('email', '=', $this->input('recipient_email'))->firstOrFail();
+    }
+
+    public function getAmountInCents(): int
+    {
+        return (int) ceil($this->float('amount') * 100);
+    }
+
+    public function isRecurring(): bool
+    {
+        return $this->enum('type', WalletTransfertType::class) === WalletTransfertType::RECURRING;
+    }
+
+    public function getType(): WalletTransfertType
+    {
+        return match ($this->isRecurring()) {
+            true => WalletTransfertType::RECURRING,
+            default => WalletTransfertType::SINGLE
+        };
     }
 }

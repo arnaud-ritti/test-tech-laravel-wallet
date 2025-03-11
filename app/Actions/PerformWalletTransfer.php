@@ -24,7 +24,7 @@ readonly class PerformWalletTransfer
         User $recipient,
         int $amount,
         string $reason,
-        WalletTransfertType $type,
+        ?WalletTransfertType $type = WalletTransfertType::SINGLE,
         ?CarbonInterface $startDate = null,
         ?CarbonInterface $endDate = null,
         ?int $frequency = null
@@ -35,6 +35,7 @@ readonly class PerformWalletTransfer
                 'source_id' => $sender->wallet->id,
                 'target_id' => $recipient->wallet->id,
                 'type' => $type,
+                'reason' => $reason,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'frequency' => $frequency,
@@ -44,7 +45,7 @@ readonly class PerformWalletTransfer
                 wallet: $sender->wallet,
                 type: WalletTransactionType::DEBIT,
                 amount: $amount,
-                reason: $reason,
+                reason: $transfer->reason,
                 transfer: $transfer
             );
 
@@ -52,7 +53,7 @@ readonly class PerformWalletTransfer
                 wallet: $recipient->wallet,
                 type: WalletTransactionType::CREDIT,
                 amount: $amount,
-                reason: $reason,
+                reason: $transfer->reason,
                 transfer: $transfer
             );
 

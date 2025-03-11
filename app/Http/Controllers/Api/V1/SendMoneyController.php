@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\PerformWalletTransfer;
+use App\Enums\WalletTransfertType;
 use App\Http\Requests\Api\V1\SendMoneyRequest;
 use Illuminate\Http\Response;
 

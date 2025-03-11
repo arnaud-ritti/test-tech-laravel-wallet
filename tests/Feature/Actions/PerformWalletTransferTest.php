@@ -8,6 +8,8 @@ use App\Exceptions\InsufficientBalance;
 use App\Models\User;
 use App\Models\Wallet;
 
+use App\Notifications\LowBalance;
+use Illuminate\Support\Facades\Notification;
 use function Pest\Laravel\assertDatabaseCount;
 use function Pest\Laravel\assertDatabaseHas;
 
@@ -63,4 +65,25 @@ test('cannot perform a transfer with insufficient balance', function () {
     expect($target->refresh()->balance)->toBe(0);
 
     assertDatabaseCount('wallet_transfers', 0);
+});
+
+
+test('trigger a notification when balance is under 10', function () {
+    Notification::fake();
+    $sender = User::factory()->create();
+    $recipient = User::factory()->create();
+
+    $source = Wallet::factory()->balance(1000)->for($sender)->create();
+    $target = Wallet::factory()->for($recipient)->create();
+
+    $this->action->execute($sender, $recipient, 500, 'test');
+
+    expect($source->refresh()->balance)->toBe(500);
+    expect($target->refresh()->balance)->toBe(500);
+
+    assertDatabaseCount('wallet_transfers', 1);
+
+    Notification::assertSentTo(
+        [$sender], LowBalance::class
+    );
 });

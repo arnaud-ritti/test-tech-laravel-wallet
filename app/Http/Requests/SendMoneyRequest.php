@@ -26,8 +26,8 @@ class SendMoneyRequest extends FormRequest
             ],
             'amount' => [
                 'required',
-                'numeric',
-                'min:0.01',
+                'integer',
+                'min:1',
             ],
             'reason' => [
                 'required',

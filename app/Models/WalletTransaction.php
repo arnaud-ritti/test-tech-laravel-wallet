@@ -28,6 +28,11 @@ class WalletTransaction extends Model
         return Attribute::get(fn () => filled($this->transfer_id));
     }
 
+    protected function resaon(): Attribute
+    {
+        return Attribute::get(fn () => filled($this->transfer_id) ? $this->transfer->reason : null);
+    }
+
     public function transfer(): BelongsTo
     {
         return $this->belongsTo(WalletTransfer::class, 'transfer_id');

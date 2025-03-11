@@ -27,7 +27,7 @@ readonly class PerformWalletTransaction
             $transaction = $wallet->transactions()->create([
                 'amount' => $amount,
                 'type' => $type,
-                'reason' => $reason,
+                'reason' => $transfer?->reason ?? $reason,
                 'transfer_id' => $transfer?->id,
             ]);
 

@@ -14,7 +14,7 @@ class WalletObserver
      */
     public function updated(Wallet $wallet): void
     {
-        if (($wallet->getOriginal('balance', 0) - $wallet->balance) < 10) {
+        if ($wallet->balance < 10_00 && $wallet->getOriginal('balance') >= 10_00) {
             $wallet->user->notify(new LowBalance);
         }
     }
