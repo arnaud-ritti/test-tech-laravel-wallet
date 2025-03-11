@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\WalletTransfertType;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -33,6 +34,21 @@ class SendMoneyRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'start_date' => [
+                'required_if:recurring,true',
+                'date',
+                'after_or_equal:today',
+            ],
+            'end_date' => [
+                'required_if:recurring,true',
+                'date',
+                'after_or_equal:start_date',
+            ],
+            'frequency' => [
+                'required_if:recurring,true',
+                'numeric',
+                'min:1',
+            ],
         ];
     }
 
@@ -44,5 +60,18 @@ class SendMoneyRequest extends FormRequest
     public function getAmountInCents(): int
     {
         return (int) ceil($this->float('amount') * 100);
+    }
+
+    public function isRecurring(): bool
+    {
+        return $this->boolean('recurring');
+    }
+
+    public function getType(): WalletTransfertType
+    {
+        return match ($this->isRecurring()) {
+            true => WalletTransfertType::RECURRING,
+            default => WalletTransfertType::SINGLE
+        };
     }
 }

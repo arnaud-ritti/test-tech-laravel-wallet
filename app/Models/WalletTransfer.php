@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\WalletTransfertType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,15 @@ class WalletTransfer extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'datetime',
+            'end_date' => 'datetime',
+            'type' => WalletTransfertType::class,
+        ];
+    }
 
     /**
      * @return BelongsTo<Wallet>

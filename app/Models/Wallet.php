@@ -22,6 +22,14 @@ class Wallet extends Model
     }
 
     /**
+     * @return HasMany<WalletTransfer>
+     */
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(WalletTransfer::class, 'source_id');
+    }
+
+    /**
      * @return HasMany<WalletTransaction>
      */
     public function transactions(): HasMany

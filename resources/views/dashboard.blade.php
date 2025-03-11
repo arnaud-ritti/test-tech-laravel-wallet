@@ -16,62 +16,63 @@
                 </div>
             </div>
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-5">
-                <h2 class="text-xl font-bold mb-6">@lang('Send money to a friend')</h2>
-                <form method="POST" action="{{ route('send-money') }}" class="space-y-4">
-                    @csrf
-
-                    @if (session('money-sent-status') === 'success')
-                        <div class="p-4 text-sm text-green-800 rounded-lg bg-green-50" role="alert">
-                            <span class="font-medium">@lang('Money sent!')</span>
-                            @lang(':amount were successfully sent to :name.', ['amount' => Number::currencyCents(session('money-sent-amount', 0)), 'name' => session('money-sent-recipient-name')])
-                        </div>
-                    @elseif (session('money-sent-status') === 'insufficient-balance')
-                            <div class="p-4 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-                                <span class="font-medium">@lang('Insufficient balance!')</span>
-                                @lang('You can\'t send :amount to :name.', ['amount' => Number::currencyCents(session('money-sent-amount', 0)), 'name' => session('money-sent-recipient-name')])
-                            </div>
-                    @endif
-
-                    <div>
-                        <x-input-label for="recipient_email" :value="__('Recipient email')" />
-                        <x-text-input id="recipient_email"
-                                      class="block mt-1 w-full"
-                                      type="email"
-                                      name="recipient_email"
-                                      :value="old('recipient_email')"
-                                      required />
-                        <x-input-error :messages="$errors->get('recipient_email')" class="mt-2" />
-                    </div>
-                    <div>
-                        <x-input-label for="amount" :value="__('Amount (€)')" />
-                        <x-text-input id="amount"
-                                      class="block mt-1 w-full"
-                                      type="number"
-                                      min="0"
-                                      step="0.01"
-                                      :value="old('amount')"
-                                      name="amount"
-                                      required />
-                        <x-input-error :messages="$errors->get('amount')" class="mt-2" />
-                    </div>
-                    <div>
-                        <x-input-label for="reason" :value="__('Reason')" />
-                        <x-text-input id="reason"
-                                      class="block mt-1 w-full"
-                                      type="text"
-                                      :value="old('reason')"
-                                      name="reason"
-                                      required />
-                        <x-input-error :messages="$errors->get('reason')" class="mt-2" />
-                    </div>
-
-                    <div class="flex justify-end mt-4">
-                        <x-primary-button>
-                            {{ __('Send my money !') }}
-                        </x-primary-button>
-                    </div>
-                </form>
+                @livewire('send-money')
             </div>
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-5">
+                <h2 class="text-xl font-bold mb-6">@lang('Transfers List')</h2>
+                <table class="w-full text-sm text-left text-gray-500 border border-gray-200">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">
+                            @lang('ID')
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            @lang('Recipient')
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            @lang('Reason')
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                            @lang('Amount')
+                        </th>
+                        <th scope="col" class="px-6 py-3">
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($transfers as $transfer)
+                        <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                {{$transfer->id}}
+                            </th>
+                            <td class="px-6 py-4">
+                                {{ $transfer->target->user->name }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {{$transfer->reason}}
+                            </td>
+                            <td @class([
+                                'px-6 py-4',
+                            ])>
+                                {{Number::currencyCents($transfer->amount)}}
+                            </td>
+                            <td>
+                                <form action={{ route('delete-recurring') }} method="POST">
+                                    @method('DELETE')
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $transfer->id }}" />
+                                    <x-primary-button>
+                                        {{ __('Delete') }}
+                                    </x-primary-button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-5">
                 <h2 class="text-xl font-bold mb-6">@lang('Transactions history')</h2>
                 <table class="w-full text-sm text-left text-gray-500 border border-gray-200">

@@ -19,6 +19,10 @@ class SendMoneyController
             recipient: $recipient,
             amount: $request->input('amount'),
             reason: $request->input('reason'),
+            type: $request->getType(),
+            startDate: $request->date('start_date'),
+            endDate: $request->date('end_date'),
+            frequency: $request->integer('frequency'),
         );
 
         return response()->noContent(201);
